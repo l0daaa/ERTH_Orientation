@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERTH Orientation</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --accent-glow: #00f3ff;
+            --accent-alt: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-ar: 'Cairo', sans-serif;
+            --font-en: 'Poppins', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-ar);
+            overflow: hidden;
+        }
+
+        canvas#network-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-alt), var(--accent-glow));
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: width 0.4s ease;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+        }
+
+        .logo {
+            height: 60px;
+            max-width: 200px;
+            object-fit: contain;
+            background: transparent;
+            filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.2));
+            mix-blend-mode: normal;
+        }
+
+        .presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 100px;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px 70px;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(0, 243, 255, 0.05), transparent 60%);
+            pointer-events: none;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--accent-glow);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        h1,
+        h2 {
+            font-weight: 800;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent-alt));
+            -webkit-background-clip: text;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+
+        p,
+        li {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding-right: 0;
+        }
+
+        li {
+            position: relative;
+            padding-right: 35px;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--accent-glow);
+            position: absolute;
+            right: 10px;
+            font-size: 1.8rem;
+            top: -5px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .highlight {
+            color: #fff;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        /* Placeholders for project screenshots */
+        .img-placeholder {
+            background: rgba(0, 243, 255, 0.03);
+            border: 2px dashed rgba(0, 243, 255, 0.2);
+            border-radius: 12px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--accent-glow);
+            font-family: var(--font-en);
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .img-placeholder:hover {
+            background: rgba(0, 243, 255, 0.08);
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+        }
+
+        .img-placeholder span {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 25px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-glow);
+            color: #000;
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .counter {
+            font-family: var(--font-en);
+            font-weight: 600;
+            letter-spacing: 2px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                text-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            }
+
+            50% {
+                text-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
+            }
+
+            100% {
+                text-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Particle Background -->
+    <canvas id="network-bg"></canvas>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <!-- Header -> Logos -->
+    <header class="header">
+        <img src="./circle-cropped.png" alt="ERTH Logo" class="logo">
+        <img src="./circle-cropped (1).png" alt="University Logo" class="logo">
+    </header>
+
+    <div class="presentation" id="presentation">
+
+        <!-- 1. Title -->
+        <div class="slide active">
+            <div class="glass-panel center-text">
+                <span class="badge">Orientation 2026</span>
+                <h1 class="pulse">إرث (ERTH)</h1>
+                <p class="highlight" style="font-size: 2rem;">محاكاة كاملة لبيئة الإبداع والعمل الحقيقي</p>
+                <p>مرحباً بأساتذتنا الكرام وزملائنا الأعزاء</p>
+            </div>
+        </div>
+
+        <!-- 2. Problem -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">المشكلة</span>
+                <h2>الفجوة بين الكلية وسوق العمل</h2>
+                <ul>
+                    <li><span class="highlight">ضغط أكاديمي:</span> بين المذاكرة، التقييمات، والمشاريع النظرية.</li>
+                    <li><span class="highlight">الأنشطة المحدودة:</span> الأنشطة الطلابية تكتفي بالاتجاه النظري أو
+                        المسابقات.</li>
+                    <li><span class="highlight">صدمة سوق العمل:</span> يكتشف الطالب فجوة ضخمة في المهارات العملية
+                        والمهنية.</li>
+                    <li><span class="highlight">إهدار الوقت:</span> الحاجة لتدريب إضافي (تأخير مسار التطور).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. Solution -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">الحل</span>
+                <h2>ما هو إرث؟</h2>
+                <p>إرث ليس مجرد Student Club تقليدي..</p>
+                <ul>
+                    <li>هو <span class="highlight">محاكاة كاملة لبيئة عمل شركات التكنولوجيا</span> الحقيقية، من داخل
+                        الكلية.</li>
+                    <li>تحويل النظريات إلى <span class="highlight">مشاريع تقنية فعلية</span> تواكب السوق.</li>
+                    <li>توفير البيئة المثالية لاحتضان أفكار الطلاب وتنفيذها.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. Structure -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">الهيكلة</span>
+                <h2>النظام الهيكلي للعمل</h2>
+                <p>تم تصميم إرث ليطابق الهيكل المؤسسي لشركات البرمجة:</p>
+                <div class="grid-2">
+                    <ul>
+                        <li><span class="highlight">فرق متخصصة:</span> Frontend, Backend, Design, Testing.</li>
+                        <li><span class="highlight">قيادة واضحة:</span> كل فريق يمتلك Leader لتنظيم المهام.</li>
+                    </ul>
+                    <ul>
+                        <li><span class="highlight">مسؤوليات محددة:</span> العمل موزع بوضوح واحترافية.</li>
+                        <li><span class="highlight">إدارة الوقت:</span> العمل بنظام Deadlines وتسليم دوري.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Experience -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">التجربة</span>
+                <h2>خبرة تشغيلية داخل الكلية</h2>
+                <ul>
+                    <li><span class="highlight">مشاريع حقيقية:</span> سواء إضافات للكلية نفسها، أو مشاريع حقيقية من
+                        السوق.</li>
+                    <li><span class="highlight">تحمّل المسؤولية:</span> لن تدرس فقط، بل ستعمل وتنتج وتحل مشكلات حية.
+                    </li>
+                    <li><span class="highlight">تنفيذ الأفكار:</span> مكان يجمع أصحاب الشغف لتحويل أي فكرة لمشروع حي مع
+                        فريق متكامل.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. Benefits -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">المكتسبات</span>
+                <h2>ماذا تستفيد كطالب؟</h2>
+                <ul>
+                    <li><span class="highlight">سيرة ذاتية (CV) قوية:</span> خبرة عملية ومشاريع تزيد فرصك في المقابلات.
+                    </li>
+                    <li><span class="highlight">مهارات العمل الجماعي:</span> احتكاك فعلي بديناميكية الفرق وتواصل
+                        الشركات.</li>
+                    <li><span class="highlight">النضج المهني:</span> تعلم كيفية صياغة وتوثيق الأعمال (مثل الإيميلات
+                        والتقارير المهنية).</li>
+                    <li><span class="highlight">مجتمع داعم:</span> زملاء بنطاق تفكير مشابه لتطوير أفكارك.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7. Innovation & Rewards -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">التميز</span>
+                <h2>نظام المكافآت الحصري</h2>
+                <p>النجاح في إرث يُكافأ بطرق عملية:</p>
+                <ul>
+                    <li>اختيار <span class="highlight">الطالب المتميز</span> من كل قسم بنهاية كل مشروع.</li>
+                    <li><span class="highlight">معايشة أسبوع كامل:</span> التواجد بشركة برمجة حقيقية بالسوق (ليست زيارة
+                        عابرة).</li>
+                    <li>دعم ورعاية لاحتياجات الطالب المهنية لاستكمال رحلته.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 8. Impact -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">أثرنا</span>
+                <h2>القيمة المضافة للكلية والجامعة</h2>
+                <ul>
+                    <li><span class="highlight">مكمل أساسي:</span> دعم الجانب الأكاديمي بممارسات عملية.</li>
+                    <li><span class="highlight">خريج جاهز:</span> تعزيز قوة الخريجين مما ينعكس على سمعة الكلية.</li>
+                    <li><span class="highlight">نقطة التقاء:</span> تعزيز الشراكات بيننا وبين الجامعات الأخرى عبر مشاريع
+                        تقنية مشتركة.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 9. Project Showcase Intro -->
+        <div class="slide">
+            <div class="glass-panel center-text">
+                <span class="badge">عرض مشروع</span>
+                <h2>إرث ماتشنج (ERTH Matching)</h2>
+                <p>أول نجاحاتنا على أرض الواقع لحل مشاكل الطلاب.</p>
+                <div style="margin-top: 40px;">
+                    <a href="https://matching.erth.dev/" target="_blank"
+                        style="display: inline-flex; align-items: center; gap: 12px; background: rgba(0, 243, 255, 0.1); color: var(--accent-glow); text-decoration: none; padding: 15px 35px; border-radius: 50px; font-size: 1.5rem; font-family: var(--font-en); font-weight: 600; border: 1px solid rgba(0, 243, 255, 0.3); transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);"
+                        onmouseover="this.style.background='rgba(0, 243, 255, 0.2)'; this.style.boxShadow='0 0 25px rgba(0, 243, 255, 0.3)'; this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.background='rgba(0, 243, 255, 0.1)'; this.style.boxShadow='0 0 15px rgba(0, 243, 255, 0.1)'; this.style.transform='translateY(0)';">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                        matching.erth.dev
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. Home page -->
+        <div class="slide">
+            <div class="glass-panel center-text" style="max-width: 1200px; padding: 30px;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Home page</h2>
+                <p style="font-size: 1.2rem; color: #a4b1cd; margin-bottom: 20px; font-weight: 300;">نظرة عامة على لوحة التحكم وإحصائيات المنصة.</p>
+                <div style="height: 60vh; display: flex; justify-content: center; align-items: center;">
+                    <img src="./matching1.png" alt="Home page" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; border: 2px solid rgba(0, 243, 255, 0.2); box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. Project Board -->
+        <div class="slide">
+            <div class="glass-panel center-text" style="max-width: 1200px; padding: 30px;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Project Board</h2>
+                <p style="font-size: 1.2rem; color: #a4b1cd; margin-bottom: 20px; font-weight: 300;">استعراض المشاريع المتاحة للطلاب والبحث عن الفِرق المناسبة.</p>
+                <div style="height: 60vh; display: flex; justify-content: center; align-items: center;">
+                    <img src="./screen4.JPG" alt="Project Board" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; border: 2px solid rgba(0, 243, 255, 0.2); box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. Matching Algorithm -->
+        <div class="slide">
+            <div class="glass-panel center-text" style="max-width: 1200px; padding: 30px;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Matching Algorithm</h2>
+                <p style="font-size: 1.2rem; color: #a4b1cd; margin-bottom: 20px; font-weight: 300;">ترشيح ذكي للطلاب المناسبين لكل مشروع بناءً على تطابق المهارات.</p>
+                <div style="height: 60vh; display: flex; justify-content: center; align-items: center;">
+                    <img src="./screen3.JPG" alt="Matching Algorithm" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; border: 2px solid rgba(0, 243, 255, 0.2); box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. Profile Page -->
+        <div class="slide">
+            <div class="glass-panel center-text" style="max-width: 1200px; padding: 30px;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Profile Page</h2>
+                <p style="font-size: 1.2rem; color: #a4b1cd; margin-bottom: 20px; font-weight: 300;">الملف الشخصي للطالب يسلط الضوء على سيرته الذاتية ومهاراته.</p>
+                <div style="height: 60vh; display: flex; justify-content: center; align-items: center;">
+                    <img src="./screen2.JPG" alt="Profile Page" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; border: 2px solid rgba(0, 243, 255, 0.2); box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. Reviews -->
+        <div class="slide">
+            <div class="glass-panel center-text" style="max-width: 1200px; padding: 30px;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Reviews</h2>
+                <p style="font-size: 1.2rem; color: #a4b1cd; margin-bottom: 20px; font-weight: 300;">آراء وتقييمات الطلاب حول تجربتهم الناجحة داخل المنصة.</p>
+                <div style="height: 60vh; display: flex; justify-content: center; align-items: center;">
+                    <img src="./screen1.JPG" alt="Reviews" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; border: 2px solid rgba(0, 243, 255, 0.2); box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <!-- 10. Matching Problem -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">إرث ماتشنج</span>
+                <h2>أزمة تكوين الفرق</h2>
+                <ul>
+                    <li><span class="highlight">ضياع الأفكار القوية:</span> مشاريع تخرج تموت لعدم القدرة على جمع فريق
+                        متكامل.</li>
+                    <li><span class="highlight">معيار خاطئ:</span> تكوين الفريق غالباً يُبنى على المعرفة الشخصية
+                        (الصحوبية) وليس المهارة.</li>
+                    <li><span class="highlight">ضعف الإنتاجية:</span> فريق غير متوازن يؤدي حتماً لمشاريع ضعيفة.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 11. Matching Solution -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">آلية العمل</span>
+                <h2>كيف يعمل إرث ماتشنج؟</h2>
+                <ul>
+                    <li><span class="highlight">تسجيل المهارات:</span> يبني الطالب ملفه أو يُوصله بـ LinkedIn ليتم
+                        استخراج مهاراته تلقائياً.</li>
+                    <li><span class="highlight">تحليل احتياج المشاريع:</span> صاحب الفكرة ينشر وصفاً، والمنصة تستنتج
+                        المهارات اللازمة.</li>
+                    <li><span class="highlight">المطابقة الذكية:</span> مطابقة المهارات لترشيح أفضل الطلاب وتكوين فريق
+                        قائم على الاحتياج التقني.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 12. Matching Impact -->
+        <div class="slide">
+            <div class="glass-panel">
+                <span class="badge">رؤية مستقبلية</span>
+                <h2>الأثر المتوقع للمنصة</h2>
+                <ul>
+                    <li><span class="highlight">مشاريع احترافية:</span> خروج مشاريع تخرج أكثر متانة وإبداعاً.</li>
+                    <li><span class="highlight">فرق عابرة للجامعات:</span> توحيد الجهود بين كليتنا والجامعات الشريكة
+                        لخلق فرق ضخمة.</li>
+                    <li><span class="highlight">مساحة إبداع أوسع:</span> القضاء على عائق الموارد البشرية أمام الأفكار
+                        الرائدة.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 13. Join Us -->
+        <div class="slide">
+            <div class="glass-panel center-text">
+                <span class="badge">انضمام</span>
+                <h2>كن جزءاً من إرث</h2>
+                <p>لكل طالب شغوف، مهتم بتطوير مستقبله بجدية..</p>
+                <div style="margin-top: 30px; display: flex; justify-content: center;">
+                    <img src="./joinUs.JPG" alt="Join ERTH / QR Code"
+                        style="max-width: 100%; max-height: 450px; border-radius: 20px; border: 2px solid rgba(0, 243, 255, 0.3); box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);">
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. Closing -->
+        <div class="slide">
+            <div class="glass-panel center-text">
+                <h1 class="pulse" style="margin-bottom: 30px;">شكراً لكم</h1>
+                <p class="highlight" style="font-size: 2rem;"></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="controls">
+        <button class="btn" id="prevBtn" title="Previous Slide">&#10095;</button>
+        <span class="counter"><span id="currentSlide">1</span>/<span id="totalSlides">14</span></span>
+        <button class="btn" id="nextBtn" title="Next Slide">&#10094;</button>
+    </div>
+
+    <script>
+        // Slides Logic
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const progress = document.getElementById('progress');
+        const currentSlideEl = document.getElementById('currentSlide');
+
+        let currentIdx = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, idx) => {
+                slide.classList.remove('active', 'prev');
+                if (idx === currentIdx) {
+                    slide.classList.add('active');
+                } else if (idx < currentIdx) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            // Update counter and progress bar
+            currentSlideEl.textContent = currentIdx + 1;
+            document.getElementById('totalSlides').textContent = slides.length;
+            const progressPercent = ((currentIdx) / (slides.length - 1)) * 100;
+            progress.style.width = `${progressPercent}%`;
+        }
+
+        function nextSlide() {
+            if (currentIdx < slides.length - 1) {
+                currentIdx++;
+                updateSlides();
+            }
+        }
+
+        function prevSlide() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                updateSlides();
+            }
+        }
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                nextSlide(); // In RTL, Left goes next
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                prevSlide(); // In RTL, Right goes prev
+            }
+        });
+
+        // Network Particle Physics Background
+        const canvas = document.getElementById('network-bg');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, particles;
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            const particleCount = window.innerWidth < 768 ? 40 : 80;
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    radius: Math.random() * 2 + 0.5
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(0, 243, 255, 0.5)";
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 243, 255, ${0.15 - dist / 1000})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+
+        init();
+        animate();
+        updateSlides();
+    </script>
+</body>
+
+</html>
